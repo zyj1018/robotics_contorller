@@ -1,7 +1,9 @@
 #include "canfd_driver.h"
 #include <string.h>
 #ifdef DRIVER_BACKEND_HAL
+#ifdef DRIVER_BACKEND_HAL
 #include "stm32g4xx_hal.h"
+#endif
 #endif
 
 /* ---- 环形缓冲操作 ---- */
@@ -53,6 +55,7 @@ int canfd_channel_send(canfd_channel_t *ch, const canfd_frame_t *frame) {
     ch->stats.tx_frames++;
     return 0;
 #else
+    (void)ch; (void)frame;
     (void)ch; (void)frame; return -1;
 #endif
 }

@@ -5,86 +5,104 @@ if(NOT TARGET_PLATFORM STREQUAL "ARM")
     return()
 endif()
 
-set(CUBEMX ${CMAKE_SOURCE_DIR}/mcu_b_cubemx/mcu_B)
+set(THIRD ${CMAKE_SOURCE_DIR}/third_party)
+set(BOARD ${CMAKE_CURRENT_SOURCE_DIR}/board)
 
-set(MCU_B_SOURCES
-    ${CUBEMX}/Core/Src/stm32g4xx_it.c
-    ${CUBEMX}/Core/Src/stm32g4xx_hal_msp.c
-    ${CUBEMX}/Core/Src/stm32g4xx_hal_timebase_tim.c
-    ${CUBEMX}/Core/Src/sysmem.c
-    ${CUBEMX}/Core/Src/syscalls.c
-    ${CUBEMX}/Core/Src/system_stm32g4xx.c
-    ${CUBEMX}/startup_stm32g474xx.s
-    ${CUBEMX}/USB_Device/App/usb_device.c
-    ${CUBEMX}/USB_Device/App/usbd_desc.c
-    ${CUBEMX}/USB_Device/App/usbd_cdc_if.c
-    ${CUBEMX}/USB_Device/Target/usbd_conf.c
-    ${CUBEMX}/Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_core.c
-    ${CUBEMX}/Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_ctlreq.c
-    ${CUBEMX}/Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c
-    ${CUBEMX}/Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c
-    ${CUBEMX}/Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal.c
-    ${CUBEMX}/Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_rcc.c
-    ${CUBEMX}/Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_rcc_ex.c
-    ${CUBEMX}/Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_flash.c
-    ${CUBEMX}/Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_flash_ex.c
-    ${CUBEMX}/Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_flash_ramfunc.c
-    ${CUBEMX}/Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_gpio.c
-    ${CUBEMX}/Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_exti.c
-    ${CUBEMX}/Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_dma.c
-    ${CUBEMX}/Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_dma_ex.c
-    ${CUBEMX}/Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_pwr.c
-    ${CUBEMX}/Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_pwr_ex.c
-    ${CUBEMX}/Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_cortex.c
-    ${CUBEMX}/Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_fdcan.c
-    ${CUBEMX}/Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_uart.c
-    ${CUBEMX}/Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_uart_ex.c
-    ${CUBEMX}/Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_spi.c
-    ${CUBEMX}/Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_spi_ex.c
-    ${CUBEMX}/Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_tim.c
-    ${CUBEMX}/Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_tim_ex.c
-    ${CUBEMX}/Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_pcd.c
-    ${CUBEMX}/Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_pcd_ex.c
-    ${CUBEMX}/Drivers/STM32G4xx_HAL_Driver/Src/stm32g4xx_ll_usb.c
-    ${CUBEMX}/Middlewares/Third_Party/FreeRTOS/Source/croutine.c
-    ${CUBEMX}/Middlewares/Third_Party/FreeRTOS/Source/event_groups.c
-    ${CUBEMX}/Middlewares/Third_Party/FreeRTOS/Source/list.c
-    ${CUBEMX}/Middlewares/Third_Party/FreeRTOS/Source/queue.c
-    ${CUBEMX}/Middlewares/Third_Party/FreeRTOS/Source/stream_buffer.c
-    ${CUBEMX}/Middlewares/Third_Party/FreeRTOS/Source/tasks.c
-    ${CUBEMX}/Middlewares/Third_Party/FreeRTOS/Source/timers.c
-    ${CUBEMX}/Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.c
-    ${CUBEMX}/Middlewares/Third_Party/FreeRTOS/Source/portable/MemMang/heap_4.c
-    ${CUBEMX}/Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/port.c
+set(HAL_SOURCES
+    ${THIRD}/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal.c
+    ${THIRD}/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_rcc.c
+    ${THIRD}/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_rcc_ex.c
+    ${THIRD}/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_flash.c
+    ${THIRD}/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_flash_ex.c
+    ${THIRD}/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_flash_ramfunc.c
+    ${THIRD}/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_gpio.c
+    ${THIRD}/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_exti.c
+    ${THIRD}/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_dma.c
+    ${THIRD}/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_dma_ex.c
+    ${THIRD}/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_pwr.c
+    ${THIRD}/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_pwr_ex.c
+    ${THIRD}/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_cortex.c
+    ${THIRD}/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_fdcan.c
+    ${THIRD}/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_uart.c
+    ${THIRD}/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_uart_ex.c
+    ${THIRD}/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_spi.c
+    ${THIRD}/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_spi_ex.c
+    ${THIRD}/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_tim.c
+    ${THIRD}/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_tim_ex.c
+    ${THIRD}/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_pcd.c
+    ${THIRD}/STM32G4xx_HAL_Driver/Src/stm32g4xx_hal_pcd_ex.c
+    ${THIRD}/STM32G4xx_HAL_Driver/Src/stm32g4xx_ll_usb.c
 )
 
-add_executable(mcu_b_firmware ${MCU_B_SOURCES})
+set(FREERTOS_SOURCES
+    ${THIRD}/FreeRTOS/Source/croutine.c
+    ${THIRD}/FreeRTOS/Source/event_groups.c
+    ${THIRD}/FreeRTOS/Source/list.c
+    ${THIRD}/FreeRTOS/Source/queue.c
+    ${THIRD}/FreeRTOS/Source/stream_buffer.c
+    ${THIRD}/FreeRTOS/Source/tasks.c
+    ${THIRD}/FreeRTOS/Source/timers.c
+    ${THIRD}/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.c
+    ${THIRD}/FreeRTOS/Source/portable/MemMang/heap_4.c
+    ${THIRD}/FreeRTOS/Source/portable/GCC/ARM_CM4F/port.c
+)
+
+set(USB_SOURCES
+    ${THIRD}/STM32_USB_Device_Library/Core/Src/usbd_core.c
+    ${THIRD}/STM32_USB_Device_Library/Core/Src/usbd_ctlreq.c
+    ${THIRD}/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c
+    ${THIRD}/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c
+)
+
+set(BOARD_SOURCES
+    ${BOARD}/stm32g4xx_it.c
+    ${BOARD}/stm32g4xx_hal_msp.c
+    ${BOARD}/stm32g4xx_hal_timebase_tim.c
+    ${BOARD}/system_stm32g4xx.c
+    ${BOARD}/sysmem.c
+    ${BOARD}/syscalls.c
+    ${BOARD}/startup_stm32g474xx.s
+    ${BOARD}/usb_device.c
+    ${BOARD}/usbd_desc.c
+    ${BOARD}/usbd_cdc_if.c
+    ${BOARD}/usbd_conf.c
+)
+
+set(APP_SOURCES
+    ${CMAKE_CURRENT_SOURCE_DIR}/application/main.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/application/app_freertos.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/application/app_tasks.c
+)
+
+add_executable(mcu_b_firmware
+    ${HAL_SOURCES} ${FREERTOS_SOURCES} ${USB_SOURCES}
+    ${BOARD_SOURCES} ${APP_SOURCES}
+)
 
 target_include_directories(mcu_b_firmware PRIVATE
-    ${CUBEMX}/Core/Inc
-    ${CUBEMX}/USB_Device/App
-    ${CUBEMX}/USB_Device/Target
-    ${CUBEMX}/Drivers/STM32G4xx_HAL_Driver/Inc
-    ${CUBEMX}/Drivers/STM32G4xx_HAL_Driver/Inc/Legacy
-    ${CUBEMX}/Drivers/CMSIS/Device/ST/STM32G4xx/Include
-    ${CUBEMX}/Drivers/CMSIS/Include
-    ${CUBEMX}/Middlewares/Third_Party/FreeRTOS/Source/include
-    ${CUBEMX}/Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2
-    ${CUBEMX}/Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F
-    ${CUBEMX}/Middlewares/ST/STM32_USB_Device_Library/Core/Inc
-    ${CUBEMX}/Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Inc
+    ${BOARD}
+    ${THIRD}/STM32G4xx_HAL_Driver/Inc
+    ${THIRD}/STM32G4xx_HAL_Driver/Inc/Legacy
+    ${THIRD}/CMSIS/Device/ST/STM32G4xx/Include
+    ${THIRD}/CMSIS/Include
+    ${THIRD}/FreeRTOS/Source/include
+    ${THIRD}/FreeRTOS/Source/CMSIS_RTOS_V2
+    ${THIRD}/FreeRTOS/Source/portable/GCC/ARM_CM4F
+    ${THIRD}/STM32_USB_Device_Library/Core/Inc
+    ${THIRD}/STM32_USB_Device_Library/Class/CDC/Inc
     ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_SOURCE_DIR}/mcu_common
+    ${CMAKE_SOURCE_DIR}/mcu_common/protocol
+    ${CMAKE_SOURCE_DIR}/mcu_common/drivers
 )
 
 target_compile_definitions(mcu_b_firmware PRIVATE
-    USE_HAL_DRIVER
-    STM32G474xx
-    IS_MCU_MANIPULATOR=1
+    USE_HAL_DRIVER STM32G474xx IS_MCU_MANIPULATOR=1
 )
 
 target_link_libraries(mcu_b_firmware mcu_common)
 
 target_link_options(mcu_b_firmware PRIVATE
-    -T${CUBEMX}/STM32G474XX_FLASH.ld
+    -T${BOARD}/STM32G474XX_FLASH.ld
     -Wl,--gc-sections
 )

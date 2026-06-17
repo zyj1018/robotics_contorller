@@ -1,18 +1,20 @@
 #include "rs485_driver.h"
 #include <string.h>
 #ifdef DRIVER_BACKEND_HAL
+#ifdef DRIVER_BACKEND_HAL
 #include "stm32g4xx_hal.h"
+#endif
 #endif
 
 #define RS485_MAX_RETRIES 3
 
 /* ---- 方向控制 ---- */
-static void rs485_set_tx(rs485_channel_t *ch) {
+static void rs485_set_tx(rs485_channel_t *ch) { (void)ch;
 #ifdef DRIVER_BACKEND_HAL
     HAL_GPIO_WritePin((GPIO_TypeDef*)ch->dir_port, ch->dir_pin, GPIO_PIN_SET);
 #endif
 }
-static void rs485_set_rx(rs485_channel_t *ch) {
+static void rs485_set_rx(rs485_channel_t *ch) { (void)ch;
 #ifdef DRIVER_BACKEND_HAL
     HAL_GPIO_WritePin((GPIO_TypeDef*)ch->dir_port, ch->dir_pin, GPIO_PIN_RESET);
 #endif

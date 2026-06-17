@@ -1,7 +1,9 @@
 #include "spi_slave_driver.h"
 #include <string.h>
 #ifdef DRIVER_BACKEND_HAL
+#ifdef DRIVER_BACKEND_HAL
 #include "stm32g4xx_hal.h"
+#endif
 #endif
 
 int spi_slave_init(spi_slave_t *s, uint8_t id, void *spi_handle, void *rx_dma, void *tx_dma) {
