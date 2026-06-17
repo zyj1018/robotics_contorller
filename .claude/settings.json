@@ -1,0 +1,42 @@
+{
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT:-.}/tools/git/hook-release-check.sh\"",
+            "timeout": 30,
+            "statusMessage": "检查发布条件..."
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 -c \"\nimport json, sys\ntry:\n    d = json.load(sys.stdin)\n    cmd = d.get('tool_input', {}).get('command', '')\n    if 'git commit' in cmd and '-m' in cmd:\n        msg = cmd.split('-m')[1].strip().strip('\\\"').strip(\\\"'\\\")\n        valid_types = 'feat|fix|perf|refactor|docs|test|chore|ci|style|revert|security|arch'\n        import re\n        if re.match(rf'^({valid_types})(\\([a-zA-Z0-9_./-]+\\))?: .+', msg):\n            print(json.dumps({'continue': True, 'systemMessage': '✓ 提交信息格式正确'}))\n        elif msg.startswith('Merge'):\n            print(json.dumps({'continue': True}))\n        else:\n            print(json.dumps({'continue': True, 'systemMessage': '⚠ 提交信息不符合约定式提交格式。建议: type(scope): description。类型: feat/fix/perf/refactor/docs/test/chore/ci/revert/security/arch'}))\nexcept: pass\n\"",
+            "timeout": 5
+          }
+        ]
+      },
+      {
+        "matcher": "Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 -c \"\nimport json, sys\ntry:\n    d = json.load(sys.stdin)\n    fp = d.get('tool_input', {}).get('file_path', '')\n    if fp.endswith(('VERSION','CHANGELOG.md')):\n        print(json.dumps({'continue': True, 'systemMessage': '⚠ '+fp+' 已修改。如果是版本发布，请记得运行 tools/git/release.sh finish 并打标签。'}))\n    else:\n        print(json.dumps({'continue': True}))\nexcept: print(json.dumps({'continue': True}))\n\"",
+            "timeout": 5
+          }
+        ]
+      }
+    ]
+  },
+  "attribution": {
+    "commit": "Co-Authored-By: Claude <noreply@anthropic.com>"
+  }
+}
