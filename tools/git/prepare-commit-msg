@@ -1,0 +1,99 @@
+#!/bin/bash
+# ============================================================
+# Git Hook: prepare-commit-msg
+# 自动生成约定式提交模板
+#
+# 安装:
+#   cp tools/git/prepare-commit-msg .git/hooks/prepare-commit-msg
+#   chmod +x .git/hooks/prepare-commit-msg
+# ============================================================
+
+COMMIT_MSG_FILE="$1"
+COMMIT_SOURCE="$2"
+
+# 仅在交互式提交时生效 (不改变 merge/squash/amend 的默认消息)
+if [ "$COMMIT_SOURCE" = "message" ] || [ "$COMMIT_SOURCE" = "template" ] || [ -n "${CI:-}" ]; then
+    exit 0
+fi
+
+# 获取分支名
+BRANCH=$(git branch --show-current 2>/dev/null || echo "unknown")
+
+# 根据分支名推断提交类型
+infer_type() {
+    case "$BRANCH" in
+        feature/*|feat/*)  echo "feat" ;;
+        fix/*|bugfix/*)    echo "fix" ;;
+        refactor/*)        echo "refactor" ;;
+        docs/*)            echo "docs" ;;
+        test/*)            echo "test" ;;
+        chore/*)           echo "chore" ;;
+        release/*)         echo "chore(release)" ;;
+        hotfix/*)          echo "fix(hotfix)" ;;
+        ci/*)              echo "ci" ;;
+        perf/*)            echo "perf" ;;
+        *)                 echo "" ;;
+    esac
+}
+
+# 获取分支中的 issue/ticket 编号
+extract_ticket() {
+    echo "$BRANCH" | grep -oE '[A-Z]+-[0-9]+' | head -1
+}
+
+TYPE=$(infer_type)
+TICKET=$(extract_ticket)
+
+# 生成模板
+{
+    echo ""
+    echo "# ========================================"
+    echo "# 约定式提交 (Conventional Commits)"
+    echo "# ========================================"
+    echo "#"
+    echo "# 格式: <type>[optional scope]: <description>"
+    echo "#"
+    echo "# 类型:"
+    echo "#   feat     新功能"
+    echo "#   fix      Bug修复"
+    echo "#   perf     性能优化"
+    echo "#   refactor 代码重构"
+    echo "#   docs     文档"
+    echo "#   test     测试"
+    echo "#   chore    构建/工具"
+    echo "#   ci       CI/CD"
+    echo "#   style    代码风格"
+    echo "#   security 安全修复"
+    echo "#   arch     架构变更"
+    echo "#"
+    echo "# 示例:"
+    echo "#   feat(canfd): add Bus Off auto-recovery"
+    echo "#   fix(spi): handle CRC error resync"
+    echo "#   perf(motion): optimize trajectory planner"
+    echo "#"
+    if [ -n "$TICKET" ]; then
+        echo "# 关联: $TICKET"
+    fi
+    echo "# ========================================"
+
+    if [ -n "$TYPE" ]; then
+        # 检查是否已有内容
+        if [ -s "$COMMIT_MSG_FILE" ]; then
+            echo ""
+            echo "$TYPE: "
+        else
+            echo ""
+            echo -n "$TYPE: "
+        fi
+    else
+        echo ""
+    fi
+
+} > "$COMMIT_MSG_FILE.template"
+
+# 合并原始消息（如果存在）
+if [ -s "$COMMIT_MSG_FILE" ]; then
+    cat "$COMMIT_MSG_FILE" >> "$COMMIT_MSG_FILE.template"
+fi
+
+mv "$COMMIT_MSG_FILE.template" "$COMMIT_MSG_FILE"
