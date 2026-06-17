@@ -1,0 +1,23 @@
+# 消息定义 — 单一事实源
+messages:
+  MotionCommand:
+    id: 0x1001
+    desc: "运动控制命令"
+    fields:
+      - { name: control_mode, type: uint8_t, desc: "控制模式" }
+      - { name: target_velocity, type: float, desc: "目标速度 m/s" }
+      - { name: target_position, type: float, desc: "目标位置 m" }
+      - { name: target_torque, type: float, desc: "目标力矩 Nm" }
+      - { name: acceleration_limit, type: float, desc: "加速度限制" }
+      - { name: deceleration_limit, type: float, desc: "减速度限制" }
+
+  MotionState:
+    id: 0x1002
+    desc: "运动状态反馈"
+    fields:
+      - { name: current_velocity, type: float, desc: "当前速度" }
+      - { name: current_position, type: float, desc: "当前位置" }
+      - { name: current_torque, type: float, desc: "当前力矩" }
+      - { name: motor_temp, type: float, desc: "电机温度 ℃" }
+      - { name: fault_code, type: uint16_t, desc: "故障码" }
+      - { name: status_flags, type: uint16_t, desc: "状态标志位" }

@@ -1,0 +1,14 @@
+# 故障码定义 — 单一事实源
+faults:
+  - { code: 0xA001, module: CANFD, name: BUS_OFF, level: 3, desc: "CAN FD Bus Off" }
+  - { code: 0xA002, module: CANFD, name: ERROR_PASSIVE, level: 1, desc: "CAN FD Error Passive" }
+  - { code: 0xA003, module: CANFD, name: NODE_OFFLINE, level: 2, desc: "CAN节点离线" }
+  - { code: 0xB001, module: RS485, name: DEVICE_OFFLINE, level: 3, desc: "RS485设备离线" }
+  - { code: 0xB002, module: RS485, name: CRC_ERROR_HIGH, level: 2, desc: "RS485 CRC错误率过高" }
+  - { code: 0xC001, module: MOTOR, name: OVER_TEMP, level: 3, desc: "电机过温" }
+  - { code: 0xC002, module: MOTOR, name: OVER_CURRENT, level: 4, desc: "电机过流" }
+  - { code: 0xD001, module: SAFETY, name: ESTOP_ACTIVATED, level: 4, desc: "急停激活" }
+  - { code: 0xD002, module: SAFETY, name: WATCHDOG_RESET, level: 4, desc: "看门狗复位" }
+  - { code: 0xE001, module: COMM, name: SPI_CRC_ERROR, level: 2, desc: "SPI CRC错误" }
+  - { code: 0xE002, module: COMM, name: HEARTBEAT_LOST, level: 4, desc: "心跳丢失" }
+  - { code: 0xF001, module: SYSTEM, name: FW_VERSION_MISMATCH, level: 4, desc: "固件版本不匹配" }

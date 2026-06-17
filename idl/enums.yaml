@@ -1,0 +1,37 @@
+# 枚举定义 — 单一事实源
+enums:
+  ControlMode:
+    values:
+      DISABLED: 0
+      VELOCITY: 1
+      POSITION: 2
+      TORQUE: 3
+      HOMING: 4
+
+  FaultLevel:
+    values:
+      INFO: 0
+      WARNING: 1
+      DEGRADED: 2
+      ERROR: 3
+      CRITICAL: 4
+
+  McuRole:
+    values:
+      RK: 0
+      CHASSIS: 1
+      MANIPULATOR: 2
+
+  SafetyState:
+    values:
+      POWER_OFF: 0
+      INIT: 1
+      SELF_TEST: 2
+      STANDBY: 3
+      READY: 4
+      RUNNING: 5
+      DEGRADED: 6
+      FAULT: 7
+      EMERGENCY_STOP: 8
+      UPDATE: 9
+      RECOVERY: 10

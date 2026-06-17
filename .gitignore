@@ -1,0 +1,28 @@
+# Build artifacts
+build/
+*.o
+*.a
+*.bin
+*.hex
+*.elf
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Python
+__pycache__/
+*.pyc
+*.egg-info/
+
+# Generated (committed separately)
+# generated/ should be committed — it's part of the build
+
+# Local settings
+.claude/settings.local.json

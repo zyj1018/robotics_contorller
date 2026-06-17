@@ -1,0 +1,6 @@
+add_library(rk3588_lib STATIC protocol/protocol_codec.cpp)
+target_include_directories(rk3588_lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_include_directories(rk3588_lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/protocol)
+target_include_directories(rk3588_lib PUBLIC ${CMAKE_SOURCE_DIR}/mcu_common)
+target_include_directories(rk3588_lib PUBLIC ${CMAKE_SOURCE_DIR}/mcu_common/protocol)
+target_link_libraries(rk3588_lib mcu_common)

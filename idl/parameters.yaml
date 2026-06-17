@@ -1,0 +1,11 @@
+# 参数定义 — 单一事实源
+parameters:
+  - { id: 0x2001, name: max_velocity, type: float, default: 1.0,
+      min: 0.0, max: 5.0, unit: "m/s", subsystem: CHASSIS,
+      effect: IMMEDIATE, permission: CONFIG }
+  - { id: 0x2002, name: max_acceleration, type: float, default: 0.5,
+      min: 0.1, max: 10.0, unit: "m/s^2", subsystem: CHASSIS,
+      effect: IMMEDIATE, permission: CONFIG }
+  - { id: 0x2101, name: joint_max_velocity, type: float, default: 3.14,
+      min: 0.1, max: 10.0, unit: "rad/s", subsystem: MANIPULATOR,
+      effect: IMMEDIATE, permission: CONFIG }
