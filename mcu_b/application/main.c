@@ -1,15 +1,9 @@
 #include "main.h"
 #include "cmsis_os.h"
 #include "usb_device.h"
+
 extern void SystemClock_Config(void);
-extern void MX_GPIO_Init(void);
-extern void MX_DMA_Init(void);
-extern void MX_FDCAN2_Init(void);
-extern void MX_FDCAN3_Init(void);
-extern void MX_LPUART1_UART_Init(void);
-extern void MX_USART1_UART_Init(void);
-extern void MX_USART3_UART_Init(void);
-extern void MX_SPI2_Init(void);
+extern void Board_Peripherals_Init(void);
 extern void StartDefaultTask(void *argument);
 
 static osThreadId_t defaultTaskHandle;
@@ -18,11 +12,7 @@ static const osThreadAttr_t defaultTask_attributes = {
 };
 
 int main(void) {
-    HAL_Init(); SystemClock_Config();
-    MX_GPIO_Init(); MX_DMA_Init();
-    MX_FDCAN2_Init(); MX_FDCAN3_Init();
-    MX_LPUART1_UART_Init(); MX_USART1_UART_Init(); MX_USART3_UART_Init();
-    MX_SPI2_Init(); MX_USB_PCD_Init();
+    HAL_Init(); SystemClock_Config(); Board_Peripherals_Init();
     osKernelInitialize();
     defaultTaskHandle = osThreadNew(StartDefaultTask, NULL, &defaultTask_attributes);
     osKernelStart();

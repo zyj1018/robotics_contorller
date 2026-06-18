@@ -130,16 +130,18 @@ int protocol_frame_deserialize(const uint8_t *buffer, size_t buf_size,
     size_t expected = PROTOCOL_HEADER_LENGTH + plen + 2;
     if (buf_size < expected) return PROTO_ERR_INVALID_LENGTH;
 
-    if (plen > 0) {
-        /* 校验 Payload CRC16 */
+    /* 校验 Payload CRC16 (始终校验, 包括空 payload) */
+    {
         const uint8_t *p = buffer + PROTOCOL_HEADER_LENGTH;
         uint16_t computed_crc = crc16_compute(p, plen);
         uint16_t received_crc = (uint16_t)(buffer[PROTOCOL_HEADER_LENGTH + plen] |
                                            (buffer[PROTOCOL_HEADER_LENGTH + plen + 1] << 8));
         if (computed_crc != received_crc)
             return PROTO_ERR_CRC_PAYLOAD;
+    }
 
-        if (payload) *payload = p;
+    if (plen > 0) {
+        if (payload) *payload = buffer + PROTOCOL_HEADER_LENGTH;
     } else {
         if (payload) *payload = NULL;
     }
@@ -150,7 +152,8 @@ int protocol_frame_deserialize(const uint8_t *buffer, size_t buf_size,
 
 /* ---- 同步搜索 ---- */
 int protocol_find_sync(const uint8_t *buffer, size_t buf_size) {
-    for (size_t i = 0; i < buf_size - 1; i++) {
+    if (!buffer || buf_size < 2) return -1;
+    for (size_t i = 0; i + 1 < buf_size; i++) {
         uint16_t word = (uint16_t)(buffer[i] | (buffer[i + 1] << 8));
         if (word == PROTOCOL_SYNC_WORD) return (int)i;
     }

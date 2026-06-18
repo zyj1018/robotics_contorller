@@ -24,7 +24,8 @@ if(OSAL_BACKEND STREQUAL "FREERTOS")
     )
 else()
     target_compile_definitions(mcu_common PUBLIC OSAL_BACKEND_POSIX=1)
-    target_link_libraries(mcu_common PUBLIC pthread)
+    find_package(Threads REQUIRED)
+    target_link_libraries(mcu_common PUBLIC Threads::Threads)
     target_sources(mcu_common PRIVATE
         drivers/canfd_driver.c
         drivers/rs485_driver.c

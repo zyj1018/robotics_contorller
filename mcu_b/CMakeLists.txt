@@ -62,6 +62,7 @@ set(BOARD_SOURCES
     ${BOARD}/sysmem.c
     ${BOARD}/syscalls.c
     ${BOARD}/startup_stm32g474xx.s
+    ${BOARD}/peripherals.c
     ${BOARD}/usb_device.c
     ${BOARD}/usbd_desc.c
     ${BOARD}/usbd_cdc_if.c

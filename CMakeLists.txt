@@ -2,7 +2,7 @@
 # RK3588 + 双 STM32G474 机器人控制器 — 顶层 CMake
 # ============================================================
 cmake_minimum_required(VERSION 3.20)
-project(robot_controller VERSION 0.1.0 LANGUAGES C CXX)
+project(robot_controller VERSION 0.1.0 LANGUAGES C CXX ASM)
 
 # ---- 编译选项 ----
 set(CMAKE_C_STANDARD 11)

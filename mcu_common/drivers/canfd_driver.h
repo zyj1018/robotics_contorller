@@ -45,4 +45,8 @@ void canfd_channel_isr_rx(canfd_channel_t *ch);
 void canfd_channel_isr_error(canfd_channel_t *ch, uint32_t error_code);
 int  canfd_channel_recover_bus_off(canfd_channel_t *ch);
 int  canfd_channel_get_stats(canfd_channel_t *ch, canfd_stats_t *stats);
+
+/* DLC 转换: 字节长度 ↔ HAL FDCAN DLC 枚举 */
+uint8_t canfd_bytes_to_dlc(uint8_t len);
+uint8_t canfd_dlc_to_bytes(uint8_t dlc);
 #endif

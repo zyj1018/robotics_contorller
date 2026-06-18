@@ -43,7 +43,7 @@ int canfd_channel_send(canfd_channel_t *ch, const canfd_frame_t *frame) {
     txh.Identifier = frame->id;
     txh.IdType = frame->extended ? FDCAN_EXTENDED_ID : FDCAN_STANDARD_ID;
     txh.TxFrameType = FDCAN_DATA_FRAME;
-    txh.DataLength = frame->dlc;
+    txh.DataLength = canfd_bytes_to_dlc(frame->dlc);
     txh.ErrorStateIndicator = FDCAN_ESI_ACTIVE;
     txh.BitRateSwitch = frame->brs ? FDCAN_BRS_ON : FDCAN_BRS_OFF;
     txh.FDFormat = frame->fd_format ? FDCAN_FD_CAN : FDCAN_CLASSIC_CAN;
@@ -81,7 +81,7 @@ void canfd_channel_isr_rx(canfd_channel_t *ch) {
         frame.extended = (rxh.IdType == FDCAN_EXTENDED_ID);
         frame.fd_format = (rxh.FDFormat == FDCAN_FD_CAN);
         frame.brs = (rxh.BitRateSwitch == FDCAN_BRS_ON);
-        frame.dlc = rxh.DataLength;
+        frame.dlc = canfd_dlc_to_bytes(rxh.DataLength);
         ring_push(&ch->rx_ring, &frame);
         ch->stats.rx_frames++;
     }
@@ -114,6 +114,23 @@ int canfd_channel_recover_bus_off(canfd_channel_t *ch) {
 #endif
     ch->state = CANFD_STATE_ACTIVE;
     return 0;
+}
+
+
+/* ---- DLC 转换 (CAN FD: 0-8/12/16/20/24/32/48/64 bytes) ---- */
+uint8_t canfd_bytes_to_dlc(uint8_t len) {
+    if (len <= 8)  return len;
+    if (len <= 12) return 9;
+    if (len <= 16) return 10;
+    if (len <= 20) return 11;
+    if (len <= 24) return 12;
+    if (len <= 32) return 13;
+    if (len <= 48) return 14;
+    return 15; /* 64 */
+}
+uint8_t canfd_dlc_to_bytes(uint8_t dlc) {
+    static const uint8_t map[] = {0,1,2,3,4,5,6,7,8,12,16,20,24,32,48,64};
+    return (dlc < 16) ? map[dlc] : 64;
 }
 
 int canfd_channel_get_stats(canfd_channel_t *ch, canfd_stats_t *stats) {

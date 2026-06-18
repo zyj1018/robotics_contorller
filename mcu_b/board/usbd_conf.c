@@ -39,7 +39,7 @@
 
 /* USER CODE END PV */
 
-PCD_HandleTypeDef hpcd_USB_FS;
+extern PCD_HandleTypeDef hpcd_USB_FS;  /* defined in peripherals.c */
 void Error_Handler(void);
 
 /* USER CODE BEGIN 0 */

@@ -214,6 +214,53 @@ static void test_msg_type_names(void) {
 }
 
 /* ---- 运行所有测试 ---- */
+
+/* ---- ISSUE-004: sync search boundary tests ---- */
+static void test_sync_null_buffer(void) {
+    TEST("sync NULL buffer");
+    int offset = protocol_find_sync(NULL, 0);
+    ASSERT_EQ(offset, -1);
+    PASS();
+}
+
+static void test_sync_zero_bytes(void) {
+    TEST("sync 0-byte buffer");
+    uint8_t buf[4] = {0};
+    int offset = protocol_find_sync(buf, 0);
+    ASSERT_EQ(offset, -1);
+    PASS();
+}
+
+static void test_sync_one_byte(void) {
+    TEST("sync 1-byte buffer");
+    uint8_t buf[4] = {0x5A, 0};
+    int offset = protocol_find_sync(buf, 1);
+    ASSERT_EQ(offset, -1);
+    PASS();
+}
+
+/* ---- ISSUE-005: empty payload CRC16 corruption test ---- */
+static void test_empty_payload_crc_corruption(void) {
+    TEST("empty payload CRC corruption");
+    ProtocolHeader h;
+    protocol_header_init(&h, MSG_HEARTBEAT, NODE_ID_MCU_A, NODE_ID_RK, MCU_ROLE_CHASSIS);
+
+    uint8_t buf[256];
+    size_t out_len;
+    int ret = protocol_frame_serialize(&h, NULL, 0, buf, sizeof(buf), &out_len);
+    ASSERT_OK(ret);
+
+    /* Corrupt CRC16 byte */
+    buf[out_len - 2] ^= 0xFF;
+
+    ProtocolHeader h2;
+    const uint8_t *payload;
+    uint16_t plen;
+    ret = protocol_frame_deserialize(buf, out_len, &h2, &payload, &plen);
+    ASSERT_EQ(ret, PROTO_ERR_CRC_PAYLOAD);
+    PASS();
+}
+
 int main(void) {
     printf("\n=== Protocol Codec Tests ===\n\n");
 
@@ -229,8 +276,13 @@ int main(void) {
     test_command_validation_bad_session();
     test_empty_payload();
     test_msg_type_names();
+    test_sync_null_buffer();
+    test_sync_zero_bytes();
+    test_sync_one_byte();
+    test_empty_payload_crc_corruption();
 
     printf("\n=== Results: %d run, %d passed, %d failed ===\n",
            tests_run, tests_passed, tests_failed);
     return tests_failed > 0 ? 1 : 0;
 }
+
