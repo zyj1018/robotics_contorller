@@ -155,11 +155,12 @@ build_arm/
 
 | 测试套件 | 用例数 | 覆盖内容 |
 |----------|:-----:|----------|
-| `protocol_codec` | 16 | Header/Frame 序列化, 同步搜索, CRC错误, 版本校验, 序列号/TTL/会话, 空Payload, sync边界(NULL/0/1字节), CRC篡改 |
+| `protocol_codec` | 16 | Header/Frame 序列化, 同步搜索, CRC错误, 版本校验, 序列号/TTL/会话, 空Payload, sync边界, CRC篡改 |
 | `protocol_crc` | 6 | CRC8/CRC16 已知向量, 空数据, 一致性, 差异性 |
 | `protocol_session` | 7 | 会话初始化/启停, 心跳, 入站校验, 重放拒绝, TTL超时, 发送序列号 |
-| `link_manager` | 8 | 链路仲裁(SPI优先), USB拒绝控制, USART救援白名单, 序列号重放, TTL过期, SPI断开撤销控制权 |
-| `spi_full_duplex` | 3 | SPI全双工帧交换, Link Manager过期拒绝, 10帧持续交换 |
+| `link_manager` | 15 | 链路仲裁, 控制授权, 会话强制(建立/终止/拒零/拒不匹配), USB/USART拒绝, 序列号重放, TTL过期, 非法链路类型 |
+| `spi_full_duplex` | 3 | SPI 全双工帧交换, LM 过期拒绝, 10 帧持续交换 |
+| `transport_spi` | 4 | Transport 公共 API (init/null 拒绝/超长拒绝/收发往返) |
 
 ## 代码生成
 
