@@ -127,6 +127,30 @@ ctest --output-on-failure
 ./build/tests/unit/mcu_common/test_protocol_session
 ```
 
+## 固件输出
+
+ARM 交叉编译后，产出物位于 `build_arm/` 下：
+
+```
+build_arm/
+├── mcu_a/
+│   ├── mcu_a_firmware.elf     # ELF (含调试符号, 192KB)
+│   ├── mcu_a_firmware.bin     # 原始二进制 (54KB, 烧录用)
+│   └── mcu_a_firmware.hex     # Intel HEX (151KB, 烧录用)
+├── mcu_b/
+│   ├── mcu_b_firmware.elf
+│   ├── mcu_b_firmware.bin
+│   └── mcu_b_firmware.hex
+└── mcu_common/
+    └── libmcu_common.a        # 公共库 (4.8KB)
+```
+
+| 格式 | 用途 | 烧录工具 |
+|------|------|----------|
+| `.elf` | 调试 (含符号表) | STM32CubeIDE / GDB |
+| `.bin` | 量产烧录 | STM32CubeProgrammer / J-Flash |
+| `.hex` | 量产烧录 | STM32CubeProgrammer / J-Flash |
+
 ### 当前测试覆盖
 
 | 测试套件 | 用例数 | 覆盖内容 |

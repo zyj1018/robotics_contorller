@@ -113,3 +113,11 @@ target_link_options(mcu_a_firmware PRIVATE
     -T${BOARD}/STM32G474XX_FLASH.ld
     -Wl,--gc-sections
 )
+
+# Post-build: generate .bin and .hex
+add_custom_command(TARGET mcu_a_firmware POST_BUILD
+    COMMAND ${CMAKE_OBJCOPY} -O binary $<TARGET_FILE:mcu_a_firmware> ${CMAKE_CURRENT_BINARY_DIR}/mcu_a_firmware.bin
+    COMMAND ${CMAKE_OBJCOPY} -O ihex $<TARGET_FILE:mcu_a_firmware> ${CMAKE_CURRENT_BINARY_DIR}/mcu_a_firmware.hex
+    COMMAND ${CMAKE_SIZE} $<TARGET_FILE:mcu_a_firmware>
+    COMMENT "Generating .bin and .hex for MCU-A"
+)
