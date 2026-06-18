@@ -22,8 +22,20 @@ typedef struct transport {
     char            name[16];
 } transport_t;
 
+/* SPI Transport 上下文 (供外部构造) */
+struct spi_slave; /* forward */
+typedef struct { struct spi_slave *slave; } spi_transport_ctx_t;
+
+/* Transport 错误码 */
+#define TRANS_OK           0
+#define TRANS_ERR_PARAM   -1
+#define TRANS_ERR_TIMEOUT -2
+#define TRANS_ERR_OVERFLOW -3
+#define TRANS_ERR_LINK    -4
+#define TRANS_ERR_DRIVER  -5
+
 /* Transport 工厂 */
-int transport_init(transport_t *t, link_type_t type, const char *name);
+int transport_init(transport_t *t, link_type_t type, const char *name, void *driver_ctx);
 int transport_open(transport_t *t);
 int transport_close(transport_t *t);
 int transport_send(transport_t *t, const uint8_t *data, uint32_t len, uint32_t timeout_ms);

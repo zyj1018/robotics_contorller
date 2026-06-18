@@ -1,11 +1,16 @@
 #include "link_manager.h"
 #include <string.h>
 
-/* 链路优先级: SPI(主) > USB(维护) > USART(救援) */
 #define SPI_ERR_THRESHOLD  10
 #define HEARTBEAT_TIMEO_MS 50
 
+/* ISSUE-003: 共享链路类型验证 */
+static bool link_type_is_valid(link_type_t link) {
+    return link >= LINK_SPI && link <= LINK_USART;
+}
+
 void link_manager_init(link_manager_t *mgr) {
+    if (!mgr) return;
     memset(mgr, 0, sizeof(*mgr));
     mgr->links[LINK_SPI].type   = LINK_SPI;
     mgr->links[LINK_USB].type   = LINK_USB;
@@ -16,12 +21,11 @@ void link_manager_init(link_manager_t *mgr) {
     mgr->active_link = LINK_NONE;
 }
 
-/* ---- 核心决策: 每条入站消息都要经过此函数 ---- */
 link_decision_t link_manager_evaluate(link_manager_t *mgr, link_type_t src,
                                        uint8_t msg_type, uint32_t session_id,
                                        uint32_t seq, uint32_t timestamp,
                                        uint32_t ttl_ms, uint32_t now_ms) {
-    if (!mgr) return LINK_DECISION_REJECT;
+    if (!mgr || !link_type_is_valid(src)) return LINK_DECISION_REJECT;
 
     /* 1. 链路状态检查 */
     if (mgr->links[src].state == LINK_DOWN)
@@ -34,46 +38,49 @@ link_decision_t link_manager_evaluate(link_manager_t *mgr, link_type_t src,
             case MSG_BOOTLOADER_CTRL:
             case MSG_VERSION_QUERY:
             case MSG_CAPABILITY_QUERY:
-                break; /* 允许 */
+                break;
             default:
                 return LINK_DECISION_REJECT;
         }
     }
 
     /* 3. USB 维护模式: 禁止控制命令 */
-    if (src == LINK_USB) {
-        if (msg_type == MSG_REALTIME_CONTROL)
+    if (src == LINK_USB && msg_type == MSG_REALTIME_CONTROL)
+        return LINK_DECISION_REJECT;
+
+    /* 4. 会话建立: 仅 SPI 可以建立会话, 拒绝 session_id==0 */
+    if (msg_type == MSG_SESSION_ESTABLISH) {
+        if (src != LINK_SPI || session_id == 0)
             return LINK_DECISION_REJECT;
+        link_manager_session_start(mgr, session_id);
+        return LINK_DECISION_ACCEPT;
     }
 
-    /* 4. 会话检查 */
-    if (mgr->session_active && session_id != 0 &&
-        msg_type != MSG_SESSION_ESTABLISH) {
-        if (session_id != mgr->active_session_id)
-            return LINK_DECISION_REJECT; /* 旧会话或无效会话 */
+    /* 5. 会话终止 */
+    if (msg_type == MSG_SESSION_TERMINATE) {
+        if (src != LINK_SPI || session_id != mgr->active_session_id)
+            return LINK_DECISION_REJECT;
+        link_manager_session_end(mgr);
+        return LINK_DECISION_ACCEPT;
     }
 
-    /* 5. 控制命令额外校验 (仅 SPI 可下发控制) */
+    /* 6. 实时控制命令: 必须通过 SPI + 活跃会话 + 控制权 */
     if (msg_type == MSG_REALTIME_CONTROL) {
         if (src != LINK_SPI)
             return LINK_DECISION_REJECT;
+        if (!mgr->session_active)
+            return LINK_DECISION_REJECT;
+        if (session_id == 0 || session_id != mgr->active_session_id)
+            return LINK_DECISION_REJECT;
         if (!mgr->control_granted)
             return LINK_DECISION_REJECT;
-
-        /* 序列号单调递增 */
         if (seq <= mgr->last_accepted_seq)
             return LINK_DECISION_REJECT;
-        /* TTL 检查 */
         if (ttl_ms > 0 && (now_ms - timestamp) > ttl_ms)
             return LINK_DECISION_REJECT;
 
         mgr->last_accepted_seq = seq;
         mgr->last_accepted_ts  = timestamp;
-    }
-
-    /* 6. 会话建立 */
-    if (msg_type == MSG_SESSION_ESTABLISH) {
-        link_manager_session_start(mgr, session_id);
     }
 
     /* 7. 心跳: 更新链路活跃时间 */
@@ -85,31 +92,27 @@ link_decision_t link_manager_evaluate(link_manager_t *mgr, link_type_t src,
     return LINK_DECISION_ACCEPT;
 }
 
-/* ---- 链路事件 ---- */
 void link_manager_link_up(link_manager_t *mgr, link_type_t link) {
-    if (!mgr || link >= 4) return;
+    if (!mgr || !link_type_is_valid(link)) return;
     mgr->links[link].state = LINK_UP;
     mgr->links[link].consecutive_errors = 0;
 
-    /* 自动选择最高优先级链路 */
     if (link == LINK_SPI) {
         mgr->active_link = LINK_SPI;
-        mgr->control_granted = true;
+        /* 注意: control_granted 只在 session_start 后生效 */
     } else if (mgr->active_link == LINK_NONE) {
         mgr->active_link = link;
     }
 }
 
 void link_manager_link_down(link_manager_t *mgr, link_type_t link) {
-    if (!mgr || link >= 4) return;
+    if (!mgr || !link_type_is_valid(link)) return;
     mgr->links[link].state = LINK_DOWN;
 
-    /* SPI 断开: 撤销控制权, 进入安全状态 */
     if (link == LINK_SPI) {
         mgr->control_granted = false;
         mgr->session_active = false;
     }
-    /* 回退到次高优先级 */
     if (mgr->active_link == link) {
         if (mgr->links[LINK_USB].state == LINK_UP)
             mgr->active_link = LINK_USB;
@@ -121,11 +124,12 @@ void link_manager_link_down(link_manager_t *mgr, link_type_t link) {
 }
 
 void link_manager_session_start(link_manager_t *mgr, uint32_t session_id) {
-    if (!mgr) return;
+    if (!mgr || session_id == 0) return;
     mgr->active_session_id = session_id;
     mgr->last_accepted_seq = 0;
     mgr->last_accepted_ts  = 0;
     mgr->session_active = true;
+    mgr->control_granted = true; /* ISSUE-002: 会话建立时授予控制权 */
 }
 
 void link_manager_session_end(link_manager_t *mgr) {
@@ -135,7 +139,7 @@ void link_manager_session_end(link_manager_t *mgr) {
 }
 
 bool link_manager_can_control(link_manager_t *mgr, link_type_t src) {
-    return mgr && src == LINK_SPI && mgr->control_granted;
+    return mgr && src == LINK_SPI && mgr->control_granted && mgr->session_active;
 }
 
 link_type_t link_manager_active_link(const link_manager_t *mgr) {
@@ -143,8 +147,8 @@ link_type_t link_manager_active_link(const link_manager_t *mgr) {
 }
 
 void link_manager_record_rx(link_manager_t *mgr, link_type_t link, uint32_t bytes) {
-    if (mgr && link < 4) mgr->links[link].rx_bytes += bytes;
+    if (mgr && link_type_is_valid(link)) mgr->links[link].rx_bytes += bytes;
 }
 void link_manager_record_tx(link_manager_t *mgr, link_type_t link, uint32_t bytes) {
-    if (mgr && link < 4) mgr->links[link].tx_bytes += bytes;
+    if (mgr && link_type_is_valid(link)) mgr->links[link].tx_bytes += bytes;
 }

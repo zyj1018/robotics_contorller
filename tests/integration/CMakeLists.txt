@@ -11,3 +11,18 @@ target_sources(test_spi_full_duplex PRIVATE
 )
 target_link_libraries(test_spi_full_duplex mcu_common)
 add_test(NAME spi_full_duplex COMMAND test_spi_full_duplex)
+
+add_executable(test_transport_spi test_transport_spi.c)
+target_include_directories(test_transport_spi PRIVATE
+    ${CMAKE_SOURCE_DIR}/mcu_common
+    ${CMAKE_SOURCE_DIR}/mcu_common/protocol
+    ${CMAKE_SOURCE_DIR}/mcu_common/transport
+    ${CMAKE_SOURCE_DIR}/mcu_common/drivers
+    ${CMAKE_SOURCE_DIR}/tests/mock
+)
+target_sources(test_transport_spi PRIVATE
+    ${CMAKE_SOURCE_DIR}/tests/mock/mock_spi.c
+    ${CMAKE_SOURCE_DIR}/tests/mock/mock_hal.c
+)
+target_link_libraries(test_transport_spi mcu_common)
+add_test(NAME transport_spi COMMAND test_transport_spi)

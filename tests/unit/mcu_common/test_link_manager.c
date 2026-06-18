@@ -23,6 +23,9 @@ static void test_spi_up_becomes_active(void) {
     link_manager_init(&m);
     link_manager_link_up(&m, LINK_SPI);
     ASSERT_EQ(link_manager_active_link(&m), LINK_SPI);
+    /* 需要建立会话后才能获得控制权 */
+    ASSERT_EQ(link_manager_can_control(&m, LINK_SPI), false);
+    link_manager_session_start(&m, 0x1234);
     ASSERT_EQ(link_manager_can_control(&m, LINK_SPI), true);
     PASS();
 }
@@ -105,6 +108,88 @@ static void test_usart_rescue_limits(void) {
     PASS();
 }
 
+
+/* ---- 新增测试: 会话强制 + 边界 ---- */
+
+static void test_reject_control_before_session(void) {
+    TEST("reject control before session");
+    link_manager_t m; link_manager_init(&m);
+    link_manager_link_up(&m, LINK_SPI);
+    /* SPI已UP但无会话 → 拒绝控制 */
+    link_decision_t d = link_manager_evaluate(&m, LINK_SPI, MSG_REALTIME_CONTROL,
+                                               0x1234, 1, 1000, 50, 1020);
+    ASSERT_EQ(d, LINK_DECISION_REJECT);
+    PASS();
+}
+
+static void test_reject_zero_session_id_control(void) {
+    TEST("reject session_id=0 during session");
+    link_manager_t m; link_manager_init(&m);
+    link_manager_link_up(&m, LINK_SPI);
+    /* 先建立会话再发起session_id=0的控制 */
+    link_manager_evaluate(&m, LINK_SPI, MSG_SESSION_ESTABLISH, 0xBEEF, 0, 0, 0, 0);
+    link_decision_t d = link_manager_evaluate(&m, LINK_SPI, MSG_REALTIME_CONTROL,
+                                               0, 10, 1000, 50, 1020);
+    ASSERT_EQ(d, LINK_DECISION_REJECT);
+    PASS();
+}
+
+static void test_reject_session_mismatch(void) {
+    TEST("reject mismatched session");
+    link_manager_t m; link_manager_init(&m);
+    link_manager_link_up(&m, LINK_SPI);
+    link_manager_evaluate(&m, LINK_SPI, MSG_SESSION_ESTABLISH, 0x1234, 0, 0, 0, 0);
+    link_decision_t d = link_manager_evaluate(&m, LINK_SPI, MSG_REALTIME_CONTROL,
+                                               0x5678, 10, 1000, 50, 1020);
+    ASSERT_EQ(d, LINK_DECISION_REJECT);
+    PASS();
+}
+
+static void test_reject_usb_session_establish(void) {
+    TEST("USB cannot establish session");
+    link_manager_t m; link_manager_init(&m);
+    link_manager_link_up(&m, LINK_USB);
+    link_decision_t d = link_manager_evaluate(&m, LINK_USB, MSG_SESSION_ESTABLISH,
+                                               0xBEEF, 0, 0, 0, 0);
+    ASSERT_EQ(d, LINK_DECISION_REJECT);
+    ASSERT_EQ(m.session_active, false);
+    PASS();
+}
+
+static void test_reject_zero_session_establish(void) {
+    TEST("reject session_id=0 establish");
+    link_manager_t m; link_manager_init(&m);
+    link_manager_link_up(&m, LINK_SPI);
+    link_decision_t d = link_manager_evaluate(&m, LINK_SPI, MSG_SESSION_ESTABLISH,
+                                               0, 0, 0, 0, 0);
+    ASSERT_EQ(d, LINK_DECISION_REJECT);
+    PASS();
+}
+
+static void test_invalid_link_type_rejected(void) {
+    TEST("invalid link type rejected");
+    link_manager_t m; link_manager_init(&m);
+    link_decision_t d = link_manager_evaluate(&m, (link_type_t)4, MSG_HEARTBEAT,
+                                               0, 0, 0, 0, 0);
+    ASSERT_EQ(d, LINK_DECISION_REJECT);
+    d = link_manager_evaluate(&m, (link_type_t)-1, MSG_HEARTBEAT, 0, 0, 0, 0, 0);
+    ASSERT_EQ(d, LINK_DECISION_REJECT);
+    PASS();
+}
+
+static void test_session_terminate_ok(void) {
+    TEST("session terminate via SPI");
+    link_manager_t m; link_manager_init(&m);
+    link_manager_link_up(&m, LINK_SPI);
+    link_manager_evaluate(&m, LINK_SPI, MSG_SESSION_ESTABLISH, 0xBEEF, 0, 0, 0, 0);
+    ASSERT_EQ(m.session_active, true);
+    link_decision_t d = link_manager_evaluate(&m, LINK_SPI, MSG_SESSION_TERMINATE,
+                                               0xBEEF, 0, 0, 0, 0);
+    ASSERT_EQ(d, LINK_DECISION_ACCEPT);
+    ASSERT_EQ(m.session_active, false);
+    PASS();
+}
+
 int main(void) {
     printf("\n=== Link Manager Tests ===\n\n");
     test_init();
@@ -115,6 +200,14 @@ int main(void) {
     test_ttl_expired_rejected();
     test_spi_down_revokes_control();
     test_usart_rescue_limits();
+    test_reject_control_before_session();
+    test_reject_zero_session_id_control();
+    test_reject_session_mismatch();
+    test_reject_usb_session_establish();
+    test_reject_zero_session_establish();
+    test_invalid_link_type_rejected();
+    test_session_terminate_ok();
     printf("\n=== Results: %d run, %d passed, %d failed ===\n", tests_run, tests_passed, tests_failed);
     return tests_failed>0?1:0;
 }
+
