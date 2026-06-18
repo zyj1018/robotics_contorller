@@ -155,9 +155,11 @@ build_arm/
 
 | 测试套件 | 用例数 | 覆盖内容 |
 |----------|:-----:|----------|
-| `protocol_codec` | 12 | Header/Frame 序列化往返, 同步搜索, CRC错误, 版本校验, 序列号/TTL/会话验证, 空Payload, 消息类型名 |
+| `protocol_codec` | 16 | Header/Frame 序列化, 同步搜索, CRC错误, 版本校验, 序列号/TTL/会话, 空Payload, sync边界(NULL/0/1字节), CRC篡改 |
 | `protocol_crc` | 6 | CRC8/CRC16 已知向量, 空数据, 一致性, 差异性 |
 | `protocol_session` | 7 | 会话初始化/启停, 心跳, 入站校验, 重放拒绝, TTL超时, 发送序列号 |
+| `link_manager` | 8 | 链路仲裁(SPI优先), USB拒绝控制, USART救援白名单, 序列号重放, TTL过期, SPI断开撤销控制权 |
+| `spi_full_duplex` | 3 | SPI全双工帧交换, Link Manager过期拒绝, 10帧持续交换 |
 
 ## 代码生成
 
@@ -224,8 +226,8 @@ python3 tools/codegen/generate.py
 | 阶段 | 状态 | 说明 |
 |------|:----:|------|
 | P0: 架构验证 | ✅ 完成 | 构建系统, OSAL, 协议层, Mock, 测试, 代码生成 |
-| P1: 驱动开发 | ⬜ 待开始 | CAN FD/RS485/SPI/USB 真实驱动 (需硬件) |
-| P2: 协议联调 | ⬜ 待开始 | RK↔MCU 全双工通信, Link Manager |
+| P1: 驱动开发 | ✅ 完成 | CAN FD/RS485/SPI HAL 驱动, FreeRTOS 任务骨架, CubeMX 集成 |
+| P2: 协议联调 | ✅ 完成 | Link Manager (链路仲裁/会话/救援), Transport 层, SPI 全双工集成测试 |
 | P3: 设备接入 | ⬜ 待开始 | CANopen, Modbus, 电机驱动, 编码器 |
 | P4: 控制闭环 | ⬜ 待开始 | 运动控制, 限幅/斜坡, 安全状态机 |
 | P5: 系统服务 | ⬜ 待开始 | 参数管理, 故障诊断, 日志, 看门狗, 固件升级 |
