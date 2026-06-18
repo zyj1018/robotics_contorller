@@ -1,3 +1,4 @@
+#include <stdbool.h>
 #ifndef MOCK_RS485_H
 #define MOCK_RS485_H
 #include <stdint.h>

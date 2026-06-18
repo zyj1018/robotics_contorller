@@ -1,3 +1,4 @@
+#include <stdbool.h>
 #ifndef MOCK_SPI_H
 #define MOCK_SPI_H
 #include <stdint.h>

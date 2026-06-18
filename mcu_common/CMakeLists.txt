@@ -2,6 +2,8 @@ set(MCU_COMMON_SOURCES
     protocol/protocol_codec.c
     protocol/protocol_session.c
     protocol/protocol_crc.c
+    protocol/link_manager.c
+    transport/transport_interface.c
 )
 
 set(MCU_COMMON_HEADERS
@@ -14,6 +16,7 @@ set(MCU_COMMON_HEADERS
 
 add_library(mcu_common STATIC ${MCU_COMMON_SOURCES} ${MCU_COMMON_HEADERS})
 target_include_directories(mcu_common PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+    target_include_directories(mcu_common PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/protocol)
 
 if(OSAL_BACKEND STREQUAL "FREERTOS")
     target_compile_definitions(mcu_common PUBLIC OSAL_BACKEND_FREERTOS=1)

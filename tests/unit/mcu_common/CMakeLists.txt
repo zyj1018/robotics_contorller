@@ -12,3 +12,8 @@ add_executable(test_protocol_session test_protocol_session.c)
 target_include_directories(test_protocol_session PRIVATE ${CMAKE_SOURCE_DIR}/mcu_common ${CMAKE_SOURCE_DIR}/mcu_common/protocol)
 target_link_libraries(test_protocol_session mcu_common)
 add_test(NAME protocol_session COMMAND test_protocol_session)
+
+add_executable(test_link_manager test_link_manager.c)
+target_include_directories(test_link_manager PRIVATE ${CMAKE_SOURCE_DIR}/mcu_common ${CMAKE_SOURCE_DIR}/mcu_common/protocol)
+target_link_libraries(test_link_manager mcu_common)
+add_test(NAME link_manager COMMAND test_link_manager)
