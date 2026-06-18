@@ -7,7 +7,8 @@
 ## 阅读顺序（5 分钟恢复上下文）
 
 ### 1. 本文件 (`CONTEXT_BRIEF.md`) — 30 秒了解项目
-### 2. `PROJECT_STATE.md` — 当前状态和待办
+### 2. `WORKFLOW.md` — 分支管理 & 开发流程
+### 3. `PROJECT_STATE.md` — 当前状态和待办
 ### 3. `DESIGN_DECISIONS.md` — 8 个关键决策及理由
 ### 4. `SESSION_LOG.md` — 完整会话历史
 ### 5. `../ARCHITECTURE_V2.md` — 当前推荐架构（完整设计）
